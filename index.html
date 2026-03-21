@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>우현서 과학 경시</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Apple SD Gothic Neo', sans-serif; background: #f0f2f5; color: #333; min-height: 100vh; }
+
+  .nav { background: #1a5276; display: flex; align-items: center; padding: 0 20px; }
+  .nav h1 { color: white; font-size: 18px; padding: 14px 20px 14px 0; border-right: 1px solid #2471a3; margin-right: 10px; white-space: nowrap; }
+  .nav button { background: none; border: none; color: #aaa; padding: 14px 16px; cursor: pointer; font-size: 14px; border-bottom: 3px solid transparent; white-space: nowrap; }
+  .nav button.active, .nav button:hover { color: white; border-bottom-color: #2ecc71; }
+
+  .page { display: none; padding: 24px 20px; max-width: 960px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  .category-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .cat-btn { padding: 7px 18px; border-radius: 20px; border: 2px solid #ddd; background: white; cursor: pointer; font-size: 13px; font-weight: 600; color: #555; transition: all 0.15s; }
+  .cat-btn:hover { border-color: #2ecc71; color: #27ae60; }
+  .cat-btn.active { background: #27ae60; border-color: #27ae60; color: white; }
+
+  .quiz-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+  .badge { padding: 4px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; color: white; background: #27ae60; }
+  .badge.wrong { background: #e74c3c; }
+  .badge.new { background: #f39c12; }
+  .badge.mastered { background: #1abc9c; }
+
+  .card { background: white; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 16px; overflow: hidden; }
+  .card-header { background: #1a5276; color: white; padding: 11px 20px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; }
+  .card img { max-width: 100%; display: block; margin: 0 auto; }
+  .card .empty { padding: 40px; text-align: center; color: #aaa; font-size: 14px; }
+
+  .btn-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; padding: 8px 0; }
+  .btn { padding: 11px 28px; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 600; transition: transform 0.1s, opacity 0.2s; }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.4; cursor: default; }
+  .btn-primary { background: #27ae60; color: white; }
+  .btn-success { background: #1abc9c; color: white; }
+  .btn-danger { background: #e74c3c; color: white; }
+  .btn-outline { background: white; color: #555; border: 2px solid #ddd; }
+
+  .progress-bar-wrap { background: #e0e0e0; border-radius: 10px; height: 6px; margin-bottom: 20px; overflow: hidden; }
+  .progress-bar { background: #27ae60; height: 100%; border-radius: 10px; transition: width 0.3s; }
+
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  @media(max-width: 600px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+  .stat-box { background: white; border-radius: 12px; padding: 18px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+  .stat-num { font-size: 30px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: #888; margin-top: 4px; }
+
+  .cat-section { margin-bottom: 28px; }
+  .cat-title { font-size: 16px; font-weight: 700; color: #1a5276; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center; }
+  .cat-title .cat-stats { font-size: 12px; color: #888; font-weight: 400; }
+  .problem-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
+  .problem-card { background: white; border-radius: 10px; padding: 12px 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; border-left: 4px solid #e0e0e0; }
+  .problem-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+  .problem-card.mastered { border-left-color: #1abc9c; }
+  .problem-card.wrong { border-left-color: #e74c3c; }
+  .problem-card.inprogress { border-left-color: #f39c12; }
+  .problem-card .p-num { font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; }
+  .problem-card .p-status { font-size: 12px; color: #888; margin-top: 3px; }
+  .reset-btn { font-size: 13px; color: #aaa; background: none; border: none; cursor: pointer; padding: 0 2px; line-height: 1; }
+  .reset-btn:hover { color: #e74c3c; }
+
+  .guide { background: #eafaf1; border-radius: 10px; padding: 16px 20px; margin-bottom: 16px; font-size: 14px; line-height: 1.8; color: #1a5276; }
+  .guide strong { color: #1a8a4a; }
+  code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <h1>🔬 우현서 과학 경시</h1>
+  <button class="active" data-page="quiz" onclick="switchPage(this)">🎯 퀴즈</button>
+  <button data-page="list" onclick="switchPage(this)">📋 목록</button>
+  <button data-page="guide" onclick="switchPage(this)">❓ 사용법</button>
+</nav>
+
+<!-- 퀴즈 탭 -->
+<div id="page-quiz" class="page active">
+  <div class="category-bar" id="category-bar"></div>
+
+  <div id="quiz-no-problems" class="card" style="display:none">
+    <div class="empty">아직 등록된 문제가 없습니다.</div>
+  </div>
+
+  <div id="quiz-body" style="display:none">
+    <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>
+
+    <div class="quiz-meta">
+      <span id="badge" class="badge new">새 문제</span>
+      <span id="quiz-label" style="font-size:15px; font-weight:600; color:#1a5276"></span>
+      <span id="quiz-count" style="font-size:13px; color:#aaa; margin-left:auto"></span>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span>문제</span>
+        <span id="problem-name" style="opacity:0.7; font-size:12px"></span>
+      </div>
+      <img id="problem-img" src="" alt="문제" style="display:none">
+      <div id="problem-empty" class="empty">카테고리를 선택해주세요</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-outline" id="btn-prev" onclick="goPrev()">◀ 이전</button>
+      <button class="btn btn-primary" id="btn-answer" onclick="showAnswer()">답 보기 👁</button>
+      <button class="btn btn-outline" id="btn-next" onclick="goNext()">다음 ▶</button>
+    </div>
+
+    <div class="card" id="answer-card" style="display:none">
+      <div class="card-header"><span>정답 / 풀이</span></div>
+      <img id="answer-img" src="" alt="답" style="display:none">
+      <div id="answer-empty" class="empty"></div>
+    </div>
+
+    <div id="result-row" class="btn-row" style="display:none">
+      <button class="btn btn-success" onclick="markResult(true)">✅ 맞았어요</button>
+      <button class="btn btn-danger" onclick="markResult(false)">❌ 틀렸어요</button>
+    </div>
+  </div>
+</div>
+
+<!-- 목록 탭 -->
+<div id="page-list" class="page">
+  <div class="stats" id="stats"></div>
+  <div id="problem-list"></div>
+  <div style="margin-top:12px">
+    <button class="btn btn-danger" style="padding:7px 16px;font-size:13px" onclick="if(confirm('전체 진행상황을 초기화할까요?')) resetAll()">전체 초기화</button>
+  </div>
+</div>
+
+<!-- 사용법 탭 -->
+<div id="page-guide" class="page">
+  <div class="guide">
+    <strong>🎯 퀴즈 방식</strong><br>
+    - 카테고리 선택 후 순서대로 문제 출제<br>
+    - 1번 정답 → ✅ 마스터 (퀴즈에서 제외)<br>
+    - 목록에서 특정 문제 클릭 → 바로 이동
+  </div>
+  <div class="guide">
+    <strong>💾 진행상황 백업 / 복원</strong><br>
+    - 진행상황은 이 기기 브라우저에 자동 저장됩니다<br>
+    - 다른 기기로 옮기거나 백업하려면 아래 버튼을 사용하세요<br><br>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-primary" style="padding:9px 20px;font-size:14px" onclick="exportProgress()">📥 내보내기 (백업)</button>
+      <button class="btn btn-outline" style="padding:9px 20px;font-size:14px" onclick="document.getElementById('import-file').click()">📤 가져오기 (복원)</button>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importProgress(event)">
+    </div>
+  </div>
+</div>
+
+<script src="problems.js"></script>
+<script>
+const STORAGE_KEY = 'science_quiz_progress';
+
+let allProblems = PROBLEMS_DATA;
+let progress = {};
+let currentCat = null;
+let currentIdx = 0;
+
+function loadProgress() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e) { return {}; }
+}
+
+function saveProgress() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+}
+
+function switchPage(btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + btn.dataset.page).classList.add('active');
+  btn.classList.add('active');
+  if (btn.dataset.page === 'list') loadList();
+}
+
+function init() {
+  progress = loadProgress();
+  renderCategoryBar();
+}
+
+function renderCategoryBar() {
+  const bar = document.getElementById('category-bar');
+  const cats = Object.keys(allProblems);
+
+  if (cats.length === 0) {
+    document.getElementById('quiz-no-problems').style.display = 'block';
+    document.getElementById('quiz-body').style.display = 'none';
+    bar.innerHTML = '';
+    return;
+  }
+
+  document.getElementById('quiz-no-problems').style.display = 'none';
+  document.getElementById('quiz-body').style.display = 'block';
+
+  bar.innerHTML = cats.map(cat => {
+    const problems = allProblems[cat];
+    const mastered = problems.filter(p => progress[p.name]?.mastered).length;
+    return `<button class="cat-btn ${cat === currentCat ? 'active' : ''}" onclick="selectCategory('${cat.replace(/'/g,"\\'")}')">
+      ${cat} <span style="opacity:0.7;font-weight:400">${mastered}/${problems.length}</span>
+    </button>`;
+  }).join('');
+
+  if (!currentCat || !allProblems[currentCat]) selectCategory(cats[0]);
+  else loadProblem(currentIdx);
+}
+
+function selectCategory(cat) {
+  currentCat = cat;
+  currentIdx = 0;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.cat-btn').forEach(b => {
+    if (b.textContent.trim().startsWith(cat)) b.classList.add('active');
+  });
+  loadProblem(0);
+}
+
+function quizProblems() {
+  return (allProblems[currentCat] || []).filter(p => !progress[p.name]?.mastered);
+}
+
+function loadProblem(idx) {
+  const problems = quizProblems();
+
+  if (problems.length === 0) {
+    const total = (allProblems[currentCat] || []).length;
+    document.getElementById('problem-empty').textContent = '🎉 이 카테고리 모든 문제 완료!';
+    document.getElementById('problem-img').style.display = 'none';
+    document.getElementById('answer-card').style.display = 'none';
+    document.getElementById('result-row').style.display = 'none';
+    document.getElementById('btn-answer').style.display = 'none';
+    document.getElementById('quiz-label').textContent = `${currentCat} — 완료!`;
+    document.getElementById('quiz-count').textContent = `${total} / ${total}`;
+    document.getElementById('progress-bar').style.width = '100%';
+    document.getElementById('btn-prev').disabled = true;
+    document.getElementById('btn-next').disabled = true;
+    return;
+  }
+
+  idx = Math.max(0, Math.min(idx, problems.length - 1));
+  currentIdx = idx;
+
+  const problem = problems[idx];
+  const prog = progress[problem.name] || {correct: 0, wrong: 0};
+  const allInCat = allProblems[currentCat] || [];
+  const mastered = allInCat.filter(p => progress[p.name]?.mastered).length;
+
+  document.getElementById('progress-bar').style.width = (mastered / allInCat.length * 100) + '%';
+
+  const badge = document.getElementById('badge');
+  if (prog.mastered) {
+    badge.textContent = '마스터 ✅'; badge.className = 'badge mastered';
+  } else if (prog.wrong > 0) {
+    badge.textContent = `${prog.wrong}회 틀림`; badge.className = 'badge wrong';
+  } else {
+    badge.textContent = '새 문제'; badge.className = 'badge new';
+  }
+
+  const fname = problem.name.split('/').pop();
+  const numMatch = fname.match(/(\d+)/);
+  const numLabel = numMatch ? `문제 ${parseInt(numMatch[1])}번` : fname;
+  document.getElementById('quiz-label').textContent = `${currentCat} — ${numLabel}`;
+  document.getElementById('problem-name').textContent = problem.name;
+  document.getElementById('quiz-count').textContent = `남은 문제: ${problems.length} (전체 ${allInCat.length}개 중 ${mastered}개 완료)`;
+
+  document.getElementById('btn-prev').disabled = idx === 0;
+  document.getElementById('btn-next').disabled = idx === problems.length - 1;
+  document.getElementById('btn-answer').style.display = 'inline-block';
+  document.getElementById('answer-card').style.display = 'none';
+  document.getElementById('result-row').style.display = 'none';
+  document.getElementById('answer-img').style.display = 'none';
+
+  const img = document.getElementById('problem-img');
+  const empty = document.getElementById('problem-empty');
+  img.style.display = 'none';
+  empty.textContent = '로딩중...';
+  img.onload = () => { img.style.display = 'block'; empty.textContent = ''; };
+  img.onerror = () => { empty.textContent = '이미지를 불러올 수 없습니다.'; };
+  img.src = `problems/${problem.name.split('/').map(encodeURIComponent).join('/')}`;
+}
+
+function goPrev() { loadProblem(currentIdx - 1); }
+function goNext() { loadProblem(currentIdx + 1); }
+
+function showAnswer() {
+  const problem = quizProblems()[currentIdx];
+  document.getElementById('answer-card').style.display = 'block';
+  document.getElementById('result-row').style.display = 'flex';
+  document.getElementById('btn-answer').style.display = 'none';
+
+  if (problem.has_answer) {
+    const img = document.getElementById('answer-img');
+    document.getElementById('answer-empty').textContent = '';
+    img.onload = () => img.style.display = 'block';
+    img.onerror = () => { document.getElementById('answer-empty').textContent = '답 이미지를 불러올 수 없습니다.'; };
+    img.src = `answers/${problem.name.split('/').map(encodeURIComponent).join('/')}`;
+  } else {
+    document.getElementById('answer-empty').textContent = '답 이미지가 없습니다.';
+  }
+}
+
+function markResult(correct) {
+  const problem = quizProblems()[currentIdx];
+  if (!progress[problem.name]) progress[problem.name] = {correct: 0, wrong: 0, mastered: false};
+
+  if (correct) {
+    progress[problem.name].correct += 1;
+    progress[problem.name].mastered = true;
+  } else {
+    progress[problem.name].wrong += 1;
+    progress[problem.name].correct = 0;
+    progress[problem.name].mastered = false;
+  }
+  saveProgress();
+  renderCategoryBar();
+
+  if (correct) {
+    setTimeout(() => loadProblem(currentIdx), 400);
+  } else {
+    loadProblem(currentIdx);
+  }
+}
+
+function resetOne(name) {
+  delete progress[name];
+  saveProgress();
+  loadList();
+}
+
+function resetAll() {
+  progress = {};
+  saveProgress();
+  renderCategoryBar();
+  loadList();
+}
+
+function loadList() {
+  progress = loadProgress();
+  const allList = Object.values(allProblems).flat();
+  const mastered = allList.filter(p => progress[p.name]?.mastered).length;
+  const wrong = allList.filter(p => (progress[p.name]?.wrong || 0) > 0 && !progress[p.name]?.mastered).length;
+  const unseen = allList.filter(p => !progress[p.name]).length;
+
+  document.getElementById('stats').innerHTML = `
+    <div class="stat-box"><div class="stat-num">${allList.length}</div><div class="stat-label">전체</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:#1abc9c">${mastered}</div><div class="stat-label">마스터 ✅</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:#e74c3c">${wrong}</div><div class="stat-label">틀림 ❌</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:#f39c12">${unseen}</div><div class="stat-label">미풀이 🆕</div></div>
+  `;
+
+  const listEl = document.getElementById('problem-list');
+  if (allList.length === 0) {
+    listEl.innerHTML = '<div style="text-align:center;padding:40px;color:#aaa">아직 등록된 문제가 없습니다</div>';
+    return;
+  }
+
+  listEl.innerHTML = Object.entries(allProblems).map(([cat, problems]) => {
+    const catMastered = problems.filter(p => progress[p.name]?.mastered).length;
+    const cards = problems.map(p => {
+      const prog = progress[p.name] || {};
+      const icon = prog.mastered ? '✅' : prog.wrong > 0 ? '❌' : prog.correct > 0 ? '🔄' : '🆕';
+      const statusClass = prog.mastered ? 'mastered' : prog.wrong > 0 ? 'wrong' : prog.correct > 0 ? 'inprogress' : '';
+      const pfname = p.name.split('/').pop();
+      const numMatch = pfname.match(/(\d+)/);
+      const label = numMatch ? `${parseInt(numMatch[1])}번` : pfname;
+      const detail = prog.mastered ? '마스터' : prog.wrong > 0 ? `오답 ${prog.wrong}회` : prog.correct > 0 ? `정답 ${prog.correct}회` : '미풀이';
+      const resetBtn = (prog.mastered || prog.wrong > 0 || prog.correct > 0)
+        ? `<button class="reset-btn" onclick="event.stopPropagation(); resetOne('${p.name.replace(/'/g,"\\'")}')">↺</button>`
+        : '';
+      return `<div class="problem-card ${statusClass}" onclick="jumpTo('${cat.replace(/'/g,"\\'")}', '${p.name.replace(/'/g,"\\'")}')">
+        <div class="p-num">${icon} ${label}${resetBtn}</div>
+        <div class="p-status">${detail}</div>
+      </div>`;
+    }).join('');
+
+    return `<div class="cat-section">
+      <div class="cat-title">
+        ${cat}
+        <span class="cat-stats">${catMastered}/${problems.length} 마스터</span>
+      </div>
+      <div class="problem-grid">${cards}</div>
+    </div>`;
+  }).join('');
+}
+
+function jumpTo(cat, problemName) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-quiz').classList.add('active');
+  document.querySelector('[data-page="quiz"]').classList.add('active');
+
+  currentCat = cat;
+  const isMastered = progress[problemName]?.mastered;
+  if (isMastered) {
+    renderCategoryBar();
+    loadSpecificProblem(problemName);
+  } else {
+    const idx = quizProblems().findIndex(p => p.name === problemName);
+    currentIdx = idx >= 0 ? idx : 0;
+    renderCategoryBar();
+  }
+}
+
+function loadSpecificProblem(problemName) {
+  const problem = (allProblems[currentCat] || []).find(p => p.name === problemName);
+  if (!problem) return;
+  const allInCat = allProblems[currentCat] || [];
+  const mastered = allInCat.filter(p => progress[p.name]?.mastered).length;
+  document.getElementById('progress-bar').style.width = (mastered / allInCat.length * 100) + '%';
+  document.getElementById('problem-empty').textContent = '';
+  document.getElementById('answer-card').style.display = 'none';
+  document.getElementById('result-row').style.display = 'none';
+  document.getElementById('btn-answer').style.display = '';
+  const badge = document.getElementById('badge');
+  badge.textContent = '마스터 ✅'; badge.className = 'badge mastered';
+  const fname = problem.name.split('/').pop();
+  const numMatch = fname.match(/(\d+)/);
+  const numLabel = numMatch ? `문제 ${parseInt(numMatch[1])}번` : fname;
+  document.getElementById('quiz-label').textContent = `${currentCat} — ${numLabel}`;
+  document.getElementById('quiz-count').textContent = `남은 문제: ${quizProblems().length} (전체 ${allInCat.length}개 중 ${mastered}개 완료)`;
+  document.getElementById('problem-name').textContent = problem.name;
+  const img = document.getElementById('problem-img');
+  img.style.display = '';
+  img.src = `problems/${problem.name.split('/').map(encodeURIComponent).join('/')}`;
+}
+
+function exportProgress() {
+  const data = localStorage.getItem(STORAGE_KEY) || '{}';
+  const blob = new Blob([data], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `science_quiz_backup_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+}
+
+function importProgress(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      progress = data;
+      alert('✅ 복원 완료! 앱을 새로고침합니다.');
+      location.reload();
+    } catch {
+      alert('❌ 파일이 올바르지 않습니다.');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+init();
+</script>
+</body>
+</html>
