@@ -12,6 +12,7 @@
   .nav h1 { color: white; font-size: 18px; padding: 14px 20px 14px 0; border-right: 1px solid #2471a3; margin-right: 10px; white-space: nowrap; }
   .nav button { background: none; border: none; color: #aaa; padding: 14px 16px; cursor: pointer; font-size: 14px; border-bottom: 3px solid transparent; white-space: nowrap; }
   .nav button.active, .nav button:hover { color: white; border-bottom-color: #2ecc71; }
+  #sync-status { margin-left: auto; font-size: 12px; padding: 4px 10px; border-radius: 12px; color: white; background: #555; white-space: nowrap; }
 
   .page { display: none; padding: 24px 20px; max-width: 960px; margin: 0 auto; }
   .page.active { display: block; }
@@ -76,6 +77,7 @@
   <button class="active" data-page="quiz" onclick="switchPage(this)">🎯 퀴즈</button>
   <button data-page="list" onclick="switchPage(this)">📋 목록</button>
   <button data-page="guide" onclick="switchPage(this)">❓ 사용법</button>
+  <span id="sync-status">⏳ 로딩중</span>
 </nav>
 
 <!-- 퀴즈 탭 -->
@@ -141,25 +143,82 @@
     - 목록에서 특정 문제 클릭 → 바로 이동
   </div>
   <div class="guide">
-    <strong>💾 진행상황 백업 / 복원</strong><br>
-    - 진행상황은 이 기기 브라우저에 자동 저장됩니다<br>
-    - 다른 기기로 옮기거나 백업하려면 아래 버튼을 사용하세요<br><br>
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn btn-primary" style="padding:9px 20px;font-size:14px" onclick="exportProgress()">📥 내보내기 (백업)</button>
-      <button class="btn btn-outline" style="padding:9px 20px;font-size:14px" onclick="document.getElementById('import-file').click()">📤 가져오기 (복원)</button>
-      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importProgress(event)">
+    <strong>☁️ GitHub 자동 동기화</strong><br>
+    - 모든 기기에서 진행상황이 자동으로 동기화됩니다<br>
+    - 처음 사용하는 기기에서 아래에 토큰을 입력하세요 (한 번만)<br><br>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <input type="password" id="token-input" placeholder="GitHub 토큰 입력" style="padding:9px 12px;border:2px solid #ddd;border-radius:8px;font-size:14px;flex:1;min-width:200px">
+      <button class="btn btn-primary" style="padding:9px 20px;font-size:14px" onclick="saveToken()">저장</button>
+      <button class="btn btn-outline" style="padding:9px 16px;font-size:14px" onclick="clearToken()">초기화</button>
     </div>
+    <div id="token-status" style="margin-top:8px;font-size:13px;color:#888"></div>
   </div>
 </div>
 
 <script src="problems.js"></script>
 <script>
 const STORAGE_KEY = 'science_quiz_progress';
+const TOKEN_KEY = 'science_quiz_github_token';
+const GH_OWNER = 'DannyAhramWoo';
+const GH_REPO = 'science-quiz';
+const GH_FILE = 'progress.json';
 
 let allProblems = PROBLEMS_DATA;
 let progress = {};
 let currentCat = null;
 let currentIdx = 0;
+let ghSha = null;
+
+function getToken() { return localStorage.getItem(TOKEN_KEY) || ''; }
+
+function setSyncStatus(msg, color) {
+  const el = document.getElementById('sync-status');
+  el.textContent = msg;
+  el.style.background = color;
+}
+
+async function fetchFromGitHub() {
+  const token = getToken();
+  if (!token) return null;
+  try {
+    const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE}`, {
+      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    ghSha = data.sha;
+    return JSON.parse(decodeURIComponent(escape(atob(data.content))));
+  } catch(e) { return null; }
+}
+
+async function pushToGitHub() {
+  const token = getToken();
+  if (!token) return;
+  setSyncStatus('🔄 저장중', '#e67e22');
+  try {
+    const check = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE}`, {
+      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+    });
+    if (check.ok) { const d = await check.json(); ghSha = d.sha; }
+
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(progress, null, 2))));
+    const body = { message: '진행상황 업데이트', content };
+    if (ghSha) body.sha = ghSha;
+
+    const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE}`, {
+      method: 'PUT',
+      headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json', Accept: 'application/vnd.github.v3+json' },
+      body: JSON.stringify(body)
+    });
+    if (res.ok) {
+      const d = await res.json();
+      ghSha = d.content.sha;
+      setSyncStatus('✅ 동기화됨', '#27ae60');
+    } else {
+      setSyncStatus('❌ 저장 실패', '#e74c3c');
+    }
+  } catch(e) { setSyncStatus('❌ 오류', '#e74c3c'); }
+}
 
 function loadProgress() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e) { return {}; }
@@ -167,6 +226,35 @@ function loadProgress() {
 
 function saveProgress() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+  pushToGitHub();
+}
+
+function saveToken() {
+  const val = document.getElementById('token-input').value.trim();
+  if (!val) return;
+  localStorage.setItem(TOKEN_KEY, val);
+  document.getElementById('token-input').value = '';
+  document.getElementById('token-status').textContent = '✅ 토큰 저장됨. 이제 자동 동기화됩니다.';
+  document.getElementById('token-status').style.color = '#27ae60';
+  init();
+}
+
+function clearToken() {
+  localStorage.removeItem(TOKEN_KEY);
+  document.getElementById('token-status').textContent = '토큰이 삭제됐습니다.';
+  document.getElementById('token-status').style.color = '#e74c3c';
+  setSyncStatus('⚫ 미연결', '#888');
+}
+
+function showTokenStatus() {
+  const el = document.getElementById('token-status');
+  if (getToken()) {
+    el.textContent = '✅ 토큰 연결됨 — 자동 동기화 중';
+    el.style.color = '#27ae60';
+  } else {
+    el.textContent = '⚠️ 토큰 없음 — 이 기기에서만 저장됩니다';
+    el.style.color = '#e67e22';
+  }
 }
 
 function switchPage(btn) {
@@ -175,10 +263,25 @@ function switchPage(btn) {
   document.getElementById('page-' + btn.dataset.page).classList.add('active');
   btn.classList.add('active');
   if (btn.dataset.page === 'list') loadList();
+  if (btn.dataset.page === 'guide') showTokenStatus();
 }
 
-function init() {
-  progress = loadProgress();
+async function init() {
+  if (getToken()) {
+    setSyncStatus('⏳ 로딩중', '#e67e22');
+    const ghProgress = await fetchFromGitHub();
+    if (ghProgress) {
+      progress = ghProgress;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+      setSyncStatus('✅ 동기화됨', '#27ae60');
+    } else {
+      progress = loadProgress();
+      setSyncStatus('❌ GitHub 오류', '#e74c3c');
+    }
+  } else {
+    progress = loadProgress();
+    setSyncStatus('⚫ 미연결', '#888');
+  }
   renderCategoryBar();
 }
 
@@ -220,6 +323,10 @@ function selectCategory(cat) {
 
 function quizProblems() {
   return (allProblems[currentCat] || []).filter(p => !progress[p.name]?.mastered);
+}
+
+function imgPath(name) {
+  return name.split('/').map(encodeURIComponent).join('/');
 }
 
 function loadProblem(idx) {
@@ -279,7 +386,7 @@ function loadProblem(idx) {
   empty.textContent = '로딩중...';
   img.onload = () => { img.style.display = 'block'; empty.textContent = ''; };
   img.onerror = () => { empty.textContent = '이미지를 불러올 수 없습니다.'; };
-  img.src = `problems/${problem.name.split('/').map(encodeURIComponent).join('/')}`;
+  img.src = `problems/${imgPath(problem.name)}`;
 }
 
 function goPrev() { loadProblem(currentIdx - 1); }
@@ -296,7 +403,7 @@ function showAnswer() {
     document.getElementById('answer-empty').textContent = '';
     img.onload = () => img.style.display = 'block';
     img.onerror = () => { document.getElementById('answer-empty').textContent = '답 이미지를 불러올 수 없습니다.'; };
-    img.src = `answers/${problem.name.split('/').map(encodeURIComponent).join('/')}`;
+    img.src = `answers/${imgPath(problem.name)}`;
   } else {
     document.getElementById('answer-empty').textContent = '답 이미지가 없습니다.';
   }
@@ -424,35 +531,7 @@ function loadSpecificProblem(problemName) {
   document.getElementById('problem-name').textContent = problem.name;
   const img = document.getElementById('problem-img');
   img.style.display = '';
-  img.src = `problems/${problem.name.split('/').map(encodeURIComponent).join('/')}`;
-}
-
-function exportProgress() {
-  const data = localStorage.getItem(STORAGE_KEY) || '{}';
-  const blob = new Blob([data], {type: 'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `science_quiz_backup_${new Date().toISOString().slice(0,10)}.json`;
-  a.click();
-}
-
-function importProgress(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const data = JSON.parse(e.target.result);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      progress = data;
-      alert('✅ 복원 완료! 앱을 새로고침합니다.');
-      location.reload();
-    } catch {
-      alert('❌ 파일이 올바르지 않습니다.');
-    }
-  };
-  reader.readAsText(file);
-  event.target.value = '';
+  img.src = `problems/${imgPath(problem.name)}`;
 }
 
 init();
