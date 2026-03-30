@@ -167,6 +167,7 @@ let allProblems = PROBLEMS_DATA;
 let progress = {};
 let currentCat = null;
 let currentIdx = 0;
+let viewAllMode = false;
 let ghSha = null;
 
 function getToken() { return localStorage.getItem(TOKEN_KEY) || ''; }
@@ -314,6 +315,7 @@ function renderCategoryBar() {
 function selectCategory(cat) {
   currentCat = cat;
   currentIdx = 0;
+  viewAllMode = false;
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.cat-btn').forEach(b => {
     if (b.textContent.trim().startsWith(cat)) b.classList.add('active');
