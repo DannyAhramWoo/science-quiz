@@ -119,6 +119,126 @@ const PROBLEMS_DATA={
     {
       "name": "ote homework/30.jpg",
       "has_answer": false
+    },
+    {
+      "name": "ote homework/31.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/32.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/33.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/34.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/35.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/36.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/37.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/38.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/39.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/40.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/41.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/42.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/43.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/44.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/45.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/46.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/47.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/48.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/49.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/50.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/51.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/52.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/53.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/54.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/55.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/56.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/57.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/58.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/59.png",
+      "has_answer": false
+    },
+    {
+      "name": "ote homework/60.png",
+      "has_answer": false
     }
   ],
   "Science 2026": [
