@@ -80,9 +80,9 @@
     "mastered": true
   },
   "Science Prac 1/01.png": {
-    "correct": 0,
+    "correct": 1,
     "wrong": 1,
-    "mastered": false
+    "mastered": true
   },
   "Science Prac 1/02.png": {
     "correct": 0,
