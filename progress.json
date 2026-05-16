@@ -533,5 +533,10 @@
     "correct": 1,
     "wrong": 0,
     "mastered": true
+  },
+  "Science 2026/27.png": {
+    "correct": 0,
+    "wrong": 1,
+    "mastered": false
   }
 }
