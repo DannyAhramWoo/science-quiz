@@ -693,5 +693,10 @@
     "correct": 1,
     "wrong": 0,
     "mastered": true
+  },
+  "ote homework 2nd/32.png": {
+    "correct": 0,
+    "wrong": 1,
+    "mastered": false
   }
 }
