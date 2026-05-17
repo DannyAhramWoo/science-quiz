@@ -16,6 +16,14 @@ PROGRESS_FILE = os.path.join(BASE_DIR, "progress.json")
 IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".gif", ".webp"}
 
 
+def has_answer_file(rel_path):
+    base = os.path.splitext(rel_path)[0]
+    for ext in IMAGE_EXTS:
+        if os.path.exists(os.path.join(ANSWERS_DIR, base + ext)):
+            return True
+    return False
+
+
 def natural_sort_key(s):
     return [int(c) if c.isdigit() else c.lower() for c in re.split(r'(\d+)', s)]
 
@@ -37,7 +45,7 @@ def list_problems():
                 if os.path.splitext(fname)[1].lower() not in IMAGE_EXTS:
                     continue
                 rel_path = f"{cat}/{fname}"
-                has_answer = os.path.exists(os.path.join(ANSWERS_DIR, rel_path))
+                has_answer = has_answer_file(rel_path)
                 if cat not in categories:
                     categories[cat] = []
                 categories[cat].append({"name": rel_path, "has_answer": has_answer})
@@ -45,7 +53,7 @@ def list_problems():
             if os.path.splitext(entry.name)[1].lower() not in IMAGE_EXTS:
                 continue
             cat = get_category(entry.name)
-            has_answer = os.path.exists(os.path.join(ANSWERS_DIR, entry.name))
+            has_answer = has_answer_file(entry.name)
             if cat not in categories:
                 categories[cat] = []
             categories[cat].append({"name": entry.name, "has_answer": has_answer})

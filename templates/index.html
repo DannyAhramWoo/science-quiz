@@ -303,9 +303,21 @@ async function showAnswer() {
   if (problem.has_answer) {
     const img = document.getElementById('answer-img');
     document.getElementById('answer-empty').textContent = '';
-    img.onload = () => img.style.display = 'block';
-    img.onerror = () => { document.getElementById('answer-empty').textContent = '답 이미지를 불러올 수 없습니다.'; };
-    img.src = `/images/answers/${problem.name.split('/').map(encodeURIComponent).join('/')}?t=${Date.now()}`;
+    const exts = ['.jpg', '.png', '.jpeg', '.gif', '.webp'];
+    const base = problem.name.replace(/\.[^.]+$/, '');
+    const basePath = `/images/answers/${base.split('/').map(encodeURIComponent).join('/')}`;
+    let tried = 0;
+    function tryNext() {
+      if (tried >= exts.length) {
+        document.getElementById('answer-empty').textContent = '답 이미지를 불러올 수 없습니다.';
+        return;
+      }
+      const ext = exts[tried++];
+      img.onload = () => img.style.display = 'block';
+      img.onerror = () => tryNext();
+      img.src = basePath + ext + `?t=${Date.now()}`;
+    }
+    tryNext();
   } else {
     document.getElementById('answer-empty').textContent = '답 이미지가 없습니다. answers/ 폴더에 같은 파일명으로 저장해주세요.';
   }
