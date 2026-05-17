@@ -403,9 +403,19 @@ function showAnswer() {
   if (problem.has_answer) {
     const img = document.getElementById('answer-img');
     document.getElementById('answer-empty').textContent = '';
-    img.onload = () => img.style.display = 'block';
-    img.onerror = () => { document.getElementById('answer-empty').textContent = '답 이미지를 불러올 수 없습니다.'; };
-    img.src = `answers/${imgPath(problem.name)}`;
+    const exts = ['.jpg', '.png', '.jpeg', '.gif', '.webp'];
+    const basePath = 'answers/' + imgPath(problem.name).replace(/\.[^.]+$/, '');
+    let tried = 0;
+    function tryNext() {
+      if (tried >= exts.length) {
+        document.getElementById('answer-empty').textContent = '답 이미지를 불러올 수 없습니다.';
+        return;
+      }
+      img.onload = () => img.style.display = 'block';
+      img.onerror = () => { tried++; tryNext(); };
+      img.src = basePath + exts[tried++];
+    }
+    tryNext();
   } else {
     document.getElementById('answer-empty').textContent = '답 이미지가 없습니다.';
   }
