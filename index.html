@@ -169,6 +169,7 @@ let currentCat = null;
 let currentIdx = 0;
 let viewAllMode = false;
 let ghSha = null;
+let currentProblem = null;
 
 function getToken() { return localStorage.getItem(TOKEN_KEY) || ''; }
 
@@ -353,6 +354,7 @@ function loadProblem(idx) {
   currentIdx = idx;
 
   const problem = problems[idx];
+  currentProblem = problem;
   const prog = progress[problem.name] || {correct: 0, wrong: 0};
   const allInCat = allProblems[currentCat] || [];
   const mastered = allInCat.filter(p => progress[p.name]?.mastered).length;
@@ -395,7 +397,7 @@ function goPrev() { loadProblem(currentIdx - 1); }
 function goNext() { loadProblem(currentIdx + 1); }
 
 function showAnswer() {
-  const problem = quizProblems()[currentIdx];
+  const problem = currentProblem || quizProblems()[currentIdx];
   document.getElementById('answer-card').style.display = 'block';
   document.getElementById('result-row').style.display = 'flex';
   document.getElementById('btn-answer').style.display = 'none';
@@ -423,7 +425,7 @@ function showAnswer() {
 }
 
 function markResult(correct) {
-  const problem = quizProblems()[currentIdx];
+  const problem = currentProblem || quizProblems()[currentIdx];
   if (!progress[problem.name]) progress[problem.name] = {correct: 0, wrong: 0, mastered: false};
 
   if (correct) {
@@ -529,6 +531,7 @@ function jumpTo(cat, problemName) {
 function loadSpecificProblem(problemName) {
   const problem = (allProblems[currentCat] || []).find(p => p.name === problemName);
   if (!problem) return;
+  currentProblem = problem;
   const allInCat = allProblems[currentCat] || [];
   const mastered = allInCat.filter(p => progress[p.name]?.mastered).length;
   document.getElementById('progress-bar').style.width = (mastered / allInCat.length * 100) + '%';
