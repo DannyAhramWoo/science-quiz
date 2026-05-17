@@ -411,9 +411,10 @@ function showAnswer() {
         document.getElementById('answer-empty').textContent = '답 이미지를 불러올 수 없습니다.';
         return;
       }
+      const ext = exts[tried++];
       img.onload = () => img.style.display = 'block';
-      img.onerror = () => { tried++; tryNext(); };
-      img.src = basePath + exts[tried++];
+      img.onerror = () => tryNext();
+      img.src = basePath + ext;
     }
     tryNext();
   } else {
@@ -437,7 +438,9 @@ function markResult(correct) {
   renderCategoryBar();
 
   if (correct) {
-    setTimeout(() => loadProblem(currentIdx), 400);
+    const newProblems = quizProblems();
+    const nextIdx = Math.min(currentIdx, newProblems.length - 1);
+    setTimeout(() => loadProblem(nextIdx < 0 ? 0 : nextIdx), 400);
   } else {
     loadProblem(currentIdx);
   }
