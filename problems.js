@@ -324,43 +324,43 @@ const PROBLEMS_DATA={
     },
     {
       "name": "ote homework 2nd/21.png",
-      "has_answer": false
+      "has_answer": true
     },
     {
       "name": "ote homework 2nd/22.png",
-      "has_answer": false
+      "has_answer": true
     },
     {
       "name": "ote homework 2nd/23.png",
-      "has_answer": false
+      "has_answer": true
     },
     {
       "name": "ote homework 2nd/24.png",
-      "has_answer": false
+      "has_answer": true
     },
     {
       "name": "ote homework 2nd/25.png",
-      "has_answer": false
+      "has_answer": true
     },
     {
       "name": "ote homework 2nd/26.png",
-      "has_answer": false
+      "has_answer": true
     },
     {
       "name": "ote homework 2nd/27.png",
-      "has_answer": false
+      "has_answer": true
     },
     {
       "name": "ote homework 2nd/28.png",
-      "has_answer": false
+      "has_answer": true
     },
     {
       "name": "ote homework 2nd/29.png",
-      "has_answer": false
+      "has_answer": true
     },
     {
       "name": "ote homework 2nd/30.png",
-      "has_answer": false
+      "has_answer": true
     },
     {
       "name": "ote homework 2nd/31.png",
