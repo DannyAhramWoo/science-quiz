@@ -241,6 +241,88 @@ const PROBLEMS_DATA={
       "has_answer": true
     }
   ],
+  "ote homework 2nd": [
+    {
+      "name": "ote homework 2nd/01.jpg",
+      "has_answer": true
+    },
+    {
+      "name": "ote homework 2nd/02.jpg",
+      "has_answer": true
+    },
+    {
+      "name": "ote homework 2nd/03.jpg",
+      "has_answer": true
+    },
+    {
+      "name": "ote homework 2nd/04.jpg",
+      "has_answer": true
+    },
+    {
+      "name": "ote homework 2nd/05.jpg",
+      "has_answer": true
+    },
+    {
+      "name": "ote homework 2nd/06.jpg",
+      "has_answer": true
+    },
+    {
+      "name": "ote homework 2nd/07.jpg",
+      "has_answer": true
+    },
+    {
+      "name": "ote homework 2nd/08.jpg",
+      "has_answer": true
+    },
+    {
+      "name": "ote homework 2nd/09.jpg",
+      "has_answer": true
+    },
+    {
+      "name": "ote homework 2nd/10.jpg",
+      "has_answer": true
+    },
+    {
+      "name": "ote homework 2nd/11.jpg",
+      "has_answer": true
+    },
+    {
+      "name": "ote homework 2nd/12.jpg",
+      "has_answer": true
+    },
+    {
+      "name": "ote homework 2nd/13.jpg",
+      "has_answer": true
+    },
+    {
+      "name": "ote homework 2nd/14.jpg",
+      "has_answer": true
+    },
+    {
+      "name": "ote homework 2nd/15.jpg",
+      "has_answer": true
+    },
+    {
+      "name": "ote homework 2nd/16.jpg",
+      "has_answer": true
+    },
+    {
+      "name": "ote homework 2nd/17.jpg",
+      "has_answer": true
+    },
+    {
+      "name": "ote homework 2nd/18.jpg",
+      "has_answer": true
+    },
+    {
+      "name": "ote homework 2nd/19.jpg",
+      "has_answer": true
+    },
+    {
+      "name": "ote homework 2nd/20.jpg",
+      "has_answer": true
+    }
+  ],
   "Science 2026": [
     {
       "name": "Science 2026/01.png",
