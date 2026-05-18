@@ -1088,5 +1088,10 @@
     "correct": 0,
     "wrong": 1,
     "mastered": false
+  },
+  "Science 2026 3rd/12.png": {
+    "correct": 1,
+    "wrong": 0,
+    "mastered": true
   }
 }
