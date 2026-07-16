@@ -179,18 +179,30 @@ function setSyncStatus(msg, color) {
   el.style.background = color;
 }
 
+let lastSyncError = '';
+
 async function fetchFromGitHub() {
   const token = getToken();
   if (!token) return null;
+  lastSyncError = '';
   try {
     const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE}`, {
       headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      if (res.status === 401) lastSyncError = '토큰이 만료됐거나 잘못됐습니다. 새 토큰을 발급받아 저장하세요.';
+      else if (res.status === 403) lastSyncError = '토큰에 이 저장소 권한이 없습니다 (repo 권한 필요).';
+      else if (res.status === 404) lastSyncError = 'progress.json 또는 저장소를 찾을 수 없습니다.';
+      else lastSyncError = `GitHub 응답 오류 (${res.status})`;
+      return null;
+    }
     const data = await res.json();
     ghSha = data.sha;
     return JSON.parse(decodeURIComponent(escape(atob(data.content))));
-  } catch(e) { return null; }
+  } catch(e) {
+    lastSyncError = '네트워크 오류: ' + e.message;
+    return null;
+  }
 }
 
 async function pushToGitHub() {
@@ -251,6 +263,11 @@ function clearToken() {
 function showTokenStatus() {
   const el = document.getElementById('token-status');
   if (getToken()) {
+    if (lastSyncError) {
+      el.textContent = '❌ ' + lastSyncError;
+      el.style.color = '#e74c3c';
+      return;
+    }
     el.textContent = '✅ 토큰 연결됨 — 자동 동기화 중';
     el.style.color = '#27ae60';
   } else {
@@ -279,6 +296,7 @@ async function init() {
     } else {
       progress = loadProgress();
       setSyncStatus('❌ GitHub 오류', '#e74c3c');
+      if (lastSyncError) console.warn('GitHub 동기화 실패:', lastSyncError);
     }
   } else {
     progress = loadProgress();
